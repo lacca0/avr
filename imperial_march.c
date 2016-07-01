@@ -25,7 +25,6 @@ void setup_io()
 	//PB3 - output
 	DDRB |= (1 << PB3);
 	PORTB |= (1 << PB3);
-
 }
 
 void turn_off_sound()
@@ -87,7 +86,6 @@ void change_note()
 		//change frequency:
 		OCR0 = frequency_const[counter];
 		setup_sound();
-
 	}
 
 	//change current duration of note:
@@ -123,7 +121,6 @@ ISR(TIMER1_COMPA_vect)
 	}
 }
 
-
 int main(void)
 {
 	setup_io();
@@ -148,7 +145,4 @@ int main(void)
 	{
 		sleep_cpu();
 	}
-
-
-
 }
