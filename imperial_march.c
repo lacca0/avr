@@ -49,7 +49,7 @@ void pause()
 void change_note()
 {
 	static const uint8_t fq_len = 72;
-	static uint8_t frequency_const[] = {
+	static const uint8_t frequency_const[] = {
 		TO_OCR0(98),  TO_OCR0(98),  TO_OCR0(98),  TO_OCR0(78),  TO_OCR0(117),
 		TO_OCR0(98),  TO_OCR0(78),  TO_OCR0(117), TO_OCR0(98),  0,
 		TO_OCR0(147), TO_OCR0(147), TO_OCR0(147), TO_OCR0(156), TO_OCR0(117),
@@ -64,7 +64,7 @@ void change_note()
 		TO_OCR0(98),  TO_OCR0(78),  TO_OCR0(117), TO_OCR0(98),  0,
 	};
 
-	static uint16_t timing[] = {
+	static const uint16_t timing[] = {
 		TO_OCR1(4), TO_OCR1(4), TO_OCR1(4), TO_OCR1(3), TO_OCR1(1), TO_OCR1(4), TO_OCR1(3), TO_OCR1(1), TO_OCR1(4),  TO_OCR1(4),
 		TO_OCR1(4), TO_OCR1(4), TO_OCR1(4), TO_OCR1(3), TO_OCR1(1), TO_OCR1(4), TO_OCR1(3), TO_OCR1(1), TO_OCR1(16),
 		TO_OCR1(4), TO_OCR1(3), TO_OCR1(1), TO_OCR1(4), TO_OCR1(3), TO_OCR1(1), TO_OCR1(1), TO_OCR1(1), TO_OCR1(2),  TO_OCR1(2),
