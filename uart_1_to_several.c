@@ -66,11 +66,11 @@ uint8_t access_data()
 ISR(USART_RXC_vect)
 {
 	uint8_t MYUDR = UDR;
-	if ((1 <= MYUDR) && (MYUDR <= 9))
+	if (('1' <= MYUDR) && (MYUDR <= '9'))
 	{
 		if (position == 0)
 		{
-			position = MYUDR;
+			position = MYUDR - '1' + 1;
 			UDR = 'a' + position - 1;
 			position--;
 		}
@@ -81,7 +81,7 @@ ISR(USART_RXC_vect)
 	}
 }
 
-ISR(USART_TXC_vect)
+ISR(USART_UDRE_vect)
 {
 	if ((position == 0) && (!IN_EMPTY))
 	{
@@ -104,7 +104,8 @@ void setup_io()
 	//set asynchronous mode, disable parity mode, 1 stop bit, 8-bit character:
 	UCSRC |= (1 << URSEL) | (0 << UMSEL) | (0 << UPM1) | (0 << UPM0) | (0 << USBS) | (1 << UCSZ1) | (1 << UCSZ0) | (0 << UCPOL);
 	//enable RX Complete, TX Complete, USART Data Register Empty Interrupts:
-	UCSRB |= (1 << RXCIE) | (1 << TXCIE) /* | (1 << UDRIE)*/| (0 << UCSZ2);;
+	UCSRA &= ~(1 << UDRE);
+	UCSRB |= (1 << RXCIE) /* (1 << TXCIE) */ | (1 << UDRIE)| (0 << UCSZ2);
 	//enable transmitter, receiver:
 	UCSRB |= (1 << RXEN) | (1 << TXEN);
 

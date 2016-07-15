@@ -15,44 +15,48 @@ int IN_PTR_E = 0;
 bool IN_FULL = false;
 bool IN_EMPTY = true;
 
-
 void add_in_data()
 {
-	if ((IN_PTR_E + 1) != IN_PTR_S)
+	if (IN_FULL)
 	{
-		if ((IN_PTR_E + 1) < BUFF_LENGTH)
-		{
-			IN_buff[IN_PTR_E + 1] = UDR;
-			IN_PTR_E ++;
-		}
-		else
-		{
-			IN_buff[0] = UDR;
-			IN_PTR_E = 0;
-		}
-
+		return;
 	}
-	else
+
+	IN_buff[IN_PTR_E] = UDR;
+	IN_PTR_E++;
+	if (IN_PTR_E == BUFF_LENGTH)
+	{
+		IN_PTR_E = 0;
+	}
+
+	if (IN_PTR_E == IN_PTR_S)
 	{
 		IN_FULL = true;
-
 	}
+
 	IN_EMPTY = false;
 }
 
-
 void send_out_data()
 {
+	if (IN_EMPTY)
+	{
+		return;
+	}
+
 	UDR = IN_buff[IN_PTR_S];
 	IN_PTR_S++;
-	if((IN_PTR_S) == BUFF_LENGTH)
+	if(IN_PTR_S == BUFF_LENGTH)
 	{
 		IN_PTR_S = 0;
 	}
-	if (IN_PTR_S = IN_PTR_E)
+
+	if (IN_PTR_S == IN_PTR_E)
 	{
 		IN_EMPTY = true;
 	}
+
+	IN_FULL = false;
 }
 
 
@@ -81,13 +85,16 @@ void setup_io()
 	//disable interrupts:
 	cli();
 	//set the baud rate:
-	UBRRL |= 6; // for 9600 bps baud rate
+	UBRRH = 0;
+	UBRRL = 12; // for 4800 bps baud rate
 	//set asynchronous mode, disable parity mode, 1 stop bit, 8-bit character:
-	UCSRC |= (1 << URSEL) | (0 << UMSEL) | (0 << UPM1) | (0 << UPM0) | (0 << USBS) | (0 << UCSZ2) | (1 << UCSZ1) | (1 << UCSZ0) | (0 << UCPOL);
+	UCSRC |= (1 << URSEL) | (0 << UMSEL) | (0 << UPM1) | (0 << UPM0) | (0 << USBS) | (1 << UCSZ1) | (1 << UCSZ0) | (0 << UCPOL);
 	//enable RX Complete, TX Complete, USART Data Register Empty Interrupts:
-	UCSRB |= (1 << RXCIE) /*| (1 << TXCIE) | (1 << UDRIE)*/;
+	UCSRB |= (1 << RXCIE) /*| (1 << TXCIE) | (1 << UDRIE)*/| (0 << UCSZ2);;
 	//enable transmitter, receiver:
 	UCSRB |= (1 << RXEN) | (1 << TXEN);
+
+	UCSRA |= (1 << U2X);
 	//enable interrupts globally:
 	sei();
 }
