@@ -14,6 +14,7 @@ int IN_PTR_E = 0;
 bool IN_FULL = false;
 bool IN_EMPTY = true;
 
+int elem_amt = 0;
 int position = 0;
 
 void add_in_data(uint8_t data)
@@ -71,8 +72,9 @@ ISR(USART_RXC_vect)
 		if (position == 0)
 		{
 			position = MYUDR - '1' + 1;
-			UDR = 'a' + position - 1;
-			position--;
+			elem_amt = MYUDR - '1' + 1;
+			UCSRA |= (1 << UDRE);
+
 		}
 		else
 		{
@@ -83,14 +85,39 @@ ISR(USART_RXC_vect)
 
 ISR(USART_UDRE_vect)
 {
+	static int stop_flag = 0;
 	if ((position == 0) && (!IN_EMPTY))
 	{
-		position = access_data();
+		elem_amt = access_data();
+		position = elem_amt;
+		stop_flag = 0;
+
 	}
-	if (position > 0)
+	else if (position > 0)
 	{
-		UDR = 'a' + position - 1;
+		UDR = 'a' + elem_amt - position;
 		position--;
+		stop_flag = 0;
+	}
+	else if ((position == 0) && IN_EMPTY)
+	{
+		if (!stop_flag)
+		{
+			stop_flag = 2;
+			UDR = '\n';
+
+		}
+		else
+		{
+			//после установки данного бита прерывание почему-то все равно срабатывает.
+			UCSRA &= ~(1 << UDRE);
+			if (stop_flag == 2)
+			{
+				stop_flag = 1;
+				UDR = '\r';
+			}
+
+		}
 	}
 }
 
@@ -108,7 +135,7 @@ void setup_io()
 	UCSRB |= (1 << RXCIE) /* (1 << TXCIE) */ | (1 << UDRIE)| (0 << UCSZ2);
 	//enable transmitter, receiver:
 	UCSRB |= (1 << RXEN) | (1 << TXEN);
-
+	//double speed:
 	UCSRA |= (1 << U2X);
 	//enable interrupts globally:
 	sei();
