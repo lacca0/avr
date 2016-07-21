@@ -63,17 +63,12 @@ uint8_t access_data()
 	return number;
 }
 
-void send_element(unsigned int amount, unsigned int pos)
+void send_element(unsigned int* amount, unsigned int* pos)
 {
-	UDR = 'a' + elem_amt - position;
-	position--;
+	UDR = *pos + '1' - 1;
+	(*pos)--;
 }
 
-void Send_element(unsigned int amount, unsigned int pos)
-{
-	UDR = 'A' + elem_amt - position;
-	position--;
-}
 
 
 void next_string()
@@ -83,6 +78,11 @@ void next_string()
 	UDR = '\r';
 }
 
+void send_next_byte()
+{
+
+
+}
 
 ISR(USART_RXC_vect)
 {
@@ -90,15 +90,17 @@ ISR(USART_RXC_vect)
 	uint8_t number = MYUDR - '1' + 1;
 	if (('1' <= MYUDR) && (MYUDR <= '9'))
 	{
-		if (position == 0)
+		/*if (position == 0)
 		{
-			position = number;
-			elem_amt = number;
+			position = elem_amt = number;
 		}
 		else
 		{
 			add_in_data(number);
 		}
+		UCSRB |= (1 << UDRIE);
+		*/
+		add_in_data(number);
 		UCSRB |= (1 << UDRIE);
 	}
 }
@@ -112,22 +114,15 @@ ISR(USART_UDRE_vect)
 	}
 	else if ((position == 0) && (!IN_EMPTY))
 	{
-		next_string();
-		elem_amt = access_data();
-		position = elem_amt;
-		Send_element(elem_amt, position);
 		UCSRB &= ~(1 << UDRIE);
-		if (!IN_EMPTY)
-		{
-			while (!(UCSRA & (1 << UDRE))) {}
-			Send_element(elem_amt, position);
-		}
+		next_string();
 		UCSRB |= (1 << UDRIE);
-
+		elem_amt = position = access_data();
+		send_element(&elem_amt, &position);
 	}
 	else if (position > 0)
 	{
-		send_element(elem_amt, position);
+		send_element(&elem_amt, &position);
 	}
 }
 
