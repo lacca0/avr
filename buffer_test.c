@@ -65,7 +65,7 @@ uint8_t access_data()
 
 void send_element(unsigned int* amount, unsigned int* pos)
 {
-	UDR = *pos + '1' - 1;
+	UDR = 'a' + *amount - *pos;
 	(*pos)--;
 }
 
