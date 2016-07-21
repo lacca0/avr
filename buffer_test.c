@@ -70,36 +70,12 @@ void send_element(unsigned int* amount, unsigned int* pos)
 }
 
 
-
-void next_string()
-{
-	UDR = '\n';
-	while (!(UCSRA & (1 << UDRE))) {}
-	UDR = '\r';
-}
-
-void send_next_byte()
-{
-
-
-}
-
 ISR(USART_RXC_vect)
 {
 	uint8_t MYUDR = UDR;
 	uint8_t number = MYUDR - '1' + 1;
 	if (('1' <= MYUDR) && (MYUDR <= '9'))
 	{
-		/*if (position == 0)
-		{
-			position = elem_amt = number;
-		}
-		else
-		{
-			add_in_data(number);
-		}
-		UCSRB |= (1 << UDRIE);
-		*/
 		add_in_data(number);
 		UCSRB |= (1 << UDRIE);
 	}
@@ -107,18 +83,32 @@ ISR(USART_RXC_vect)
 
 ISR(USART_UDRE_vect)
 {
-	if ((position == 0) && IN_EMPTY)
+	static int next_string_flag = 0;
+	if (position == 0)
 	{
-		UCSRB &= ~(1 << UDRIE);
-		next_string();
-	}
-	else if ((position == 0) && (!IN_EMPTY))
-	{
-		UCSRB &= ~(1 << UDRIE);
-		next_string();
-		UCSRB |= (1 << UDRIE);
-		elem_amt = position = access_data();
-		send_element(&elem_amt, &position);
+		if (!next_string_flag)
+		{
+			if (IN_EMPTY)
+			{
+				UCSRB &= ~(1 << UDRIE);
+			}
+			else
+			{
+				elem_amt = position = access_data();
+				send_element(&elem_amt, &position);
+			}
+			next_string_flag = 1;
+		}
+		else if (next_string_flag == 1)
+		{
+			UDR = '\n';
+			next_string_flag = 2;
+		}
+		else if (next_string_flag == 2)
+		{
+			UDR = '\r';
+			next_string_flag = 0;
+		}
 	}
 	else if (position > 0)
 	{
@@ -158,3 +148,4 @@ int main()
 	}
 
 }
+
