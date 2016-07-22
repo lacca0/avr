@@ -83,7 +83,7 @@ ISR(USART_RXC_vect)
 
 ISR(USART_UDRE_vect)
 {
-	static int next_string_flag = 0;
+	static int next_string_flag = 1;
 	if (position == 0)
 	{
 		if (!next_string_flag)
@@ -95,9 +95,9 @@ ISR(USART_UDRE_vect)
 			else
 			{
 				elem_amt = position = access_data();
-				send_element(&elem_amt, &position);
+				next_string_flag = 1;
 			}
-			next_string_flag = 1;
+
 		}
 		else if (next_string_flag == 1)
 		{
