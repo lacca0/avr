@@ -20,33 +20,40 @@
 uint16_t in_frequency = 0;
 uint16_t out_frequency = 0;
 
-ISR(USART_UDRE_vect)
+bool smth_is_playing = 0;
+
+void get_next_frequency()
 {
-	if (IN_EMPTY)
-	{
-		UCSRB &= ~(1 << UDRIE);
-	}
-	else
-	{
 		out_frequency = access_data();
 		OCR0 = TO_OCR0(out_frequency);
 		OCR1A = MS_TO_OCR1(2000);
+}
 
+void turn_on_sound()
+{
+		smth_is_playing = 1;
 		//run timer1 with prescaler 1024:
 		TCCR1B |= (1 << CS12) | (0 << CS11) | (1 << CS10);
 		//run timer0 with prescaler 64:
 		TCCR0 |= (0 << CS02) | (1 << CS01) | (1 << CS00);
-	}
 }
 
 void turn_off_sound()
 {
 	TCCR0 &= ~((1 << CS02) | (1 << CS01) | (1 << CS00));
+	TCCR1B &= ~((1 << CS12) | (1 << CS11) | (1 << CS10));
+	smth_is_playing = 0;
 }
 
-ISR(INT1_vect)
+ISR(TIMER1_COMPA_vect)
 {
 	turn_off_sound();
+	if (!IN_EMPTY)
+	{
+		get_next_frequency();
+		turn_on_sound();
+	}
+
 }
 
 ISR(USART_RXC_vect)
@@ -60,7 +67,11 @@ ISR(USART_RXC_vect)
 	{
 		add_in_data(in_frequency);
 		in_frequency = 0;
-		UCSRB |= (1 << UDRIE);
+		if (!smth_is_playing)
+		{
+			get_next_frequency();
+			turn_on_sound();
+		}
 	}
 	else
 	{
