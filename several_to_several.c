@@ -9,10 +9,6 @@
 
 #define F_CPU 1000000UL  // 1 MHz
 
-uint16_t in_frequency = 0;
-uint16_t out_frequency = 0;
-
-uint8_t position = 0;
 
 void send_element(uint16_t number, uint8_t* pos)
 {
@@ -39,6 +35,8 @@ uint8_t decim_digits_num(uint16_t number)
 
 ISR(USART_UDRE_vect)
 {
+	static uint16_t out_frequency = 0;
+	static uint8_t position = 0;
 	static uint8_t next_string_flag = 1;
 	if (position == 0)
 	{
@@ -75,6 +73,7 @@ ISR(USART_UDRE_vect)
 ISR(USART_RXC_vect)
 {
 	uint8_t MYUDR = UDR;
+	static uint16_t in_frequency = 0;
 	if ((MYUDR >= '0') && (MYUDR <= '9'))
 	{
 		in_frequency = (in_frequency * 10) + MYUDR - '1' + 1;
