@@ -17,25 +17,24 @@
 
 //PB3 is connected to buzzer.
 
-uint16_t in_frequency = 0;
 uint16_t out_frequency = 0;
 
 bool smth_is_playing = 0;
 
-void get_next_frequency()
+void set_frequency(uint16_t next_freq)
 {
-		out_frequency = access_data();
-		OCR0 = TO_OCR0(out_frequency);
-		OCR1A = MS_TO_OCR1(2000);
+	//out_frequency = access_data(); //made before function call;
+	OCR0 = TO_OCR0(next_freq);
+	OCR1A = MS_TO_OCR1(2000);
 }
 
 void turn_on_sound()
 {
-		smth_is_playing = 1;
-		//run timer1 with prescaler 1024:
-		TCCR1B |= (1 << CS12) | (0 << CS11) | (1 << CS10);
-		//run timer0 with prescaler 64:
-		TCCR0 |= (0 << CS02) | (1 << CS01) | (1 << CS00);
+	smth_is_playing = 1;
+	//run timer1 with prescaler 1024:
+	TCCR1B |= (1 << CS12) | (0 << CS11) | (1 << CS10);
+	//run timer0 with prescaler 64:
+	TCCR0 |= (0 << CS02) | (1 << CS01) | (1 << CS00);
 }
 
 void turn_off_sound()
@@ -47,18 +46,23 @@ void turn_off_sound()
 
 ISR(TIMER1_COMPA_vect)
 {
-	turn_off_sound();
-	if (!IN_EMPTY)
+	if(IN_EMPTY)
 	{
-		get_next_frequency();
-		turn_on_sound();
+		turn_off_sound();
 	}
-
+	else
+	{
+		out_frequency = access_data();
+		set_frequency(out_frequency);
+		UCSRB |= (1<< UDRIE);
+	}
 }
 
 ISR(USART_RXC_vect)
 {
 	uint8_t MYUDR = UDR;
+	static uint16_t in_frequency = 0;
+
 	if ((MYUDR >= '0') && (MYUDR <= '9'))
 	{
 		in_frequency = (in_frequency * 10) + MYUDR - '1' + 1;
@@ -69,7 +73,9 @@ ISR(USART_RXC_vect)
 		in_frequency = 0;
 		if (!smth_is_playing)
 		{
-			get_next_frequency();
+			out_frequency = access_data();
+			set_frequency(out_frequency);
+			UCSRB |= (1 << UDRIE);
 			turn_on_sound();
 		}
 	}
@@ -78,6 +84,59 @@ ISR(USART_RXC_vect)
 		in_frequency = 0;
 	}
 }
+
+void send_element(uint16_t number, uint8_t* pos)
+{
+	uint16_t divisor = 1;
+	//make 10^(*pos - 1):
+	for (uint8_t i = *pos - 1; i > 0; i--)
+	{
+		divisor *= 10;
+	}
+	UDR = '0' + (number / divisor) % 10;
+	(*pos)--;
+}
+
+uint8_t decim_digits_num(uint16_t number)
+{
+	uint8_t i = 1;
+	while ((number / 10) > 0)
+	{
+		number = number / 10;
+		i++;
+	}
+	return i;
+}
+
+ISR(USART_UDRE_vect)
+{
+	static uint8_t position = 0;
+	static uint8_t state = 1;
+	if (state == 1)
+	{
+		position = decim_digits_num(out_frequency);
+		state = 2;
+	}
+	else if (state == 2)
+	{
+		if (position > 0)
+		{
+			send_element(out_frequency, &position);
+		}
+		else
+		{
+			UDR = '\n';
+			state = 3;
+		}
+	}
+	else if (state == 3)
+	{
+		UDR = '\r';
+		state = 1;
+		UCSRB &= ~(1 << UDRIE);
+	}
+}
+
 
 void setup_io()
 {
