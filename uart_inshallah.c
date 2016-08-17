@@ -1,99 +1,87 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <avr/io.h>
-#define PRES0 64UL
-#define PRES1 1024UL
+
 #define F_CPU 1000000UL  // 1 MHz
 
 #include <util/delay.h>
 
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
-#define PRES2 1024
+#define PRES2 1024UL
 #define MY_OCR2 7
 #define VALUE_FOR_1S 140
 
 #define SELLS_NUMBER 3
-#include "music.c"
+#include "utilities.c"
+#include "sound.c"
+
+uint8_t display_current_number[SELLS_NUMBER] = {3, 0, 0}; //upside-down.
+
+#include "7seg_display.c"
 
 //PB3 is connected to buzzer.
+//PORTB 0,1,2 pins are connected to display, all PORTA for segments. (if changed change "7seg_display.c")
 
-uint8_t number_code[] =
-{
-	0xeb, //0
-	0x28, //1
-	0xb3, //2
-	0xba, //3
-	0x78, //4
-	0xda, //5
-	0xdb, //6
-	0xa8, //7
-	0xfb, //8
-	0xfa  //9
-};
 
-uint8_t current_number[SELLS_NUMBER] = {3, 0, 0}; //upside-down.
 
-void next_digit()
-{
-	static uint8_t counter = 0;
-	PORTB &= ~(111);// PORTB 0, 1, 2 pins are connected to display
-	PORTB |= (1 << counter);
-	PORTA = number_code[current_number[counter]]; //PORTA for segments
-	counter++;
-	if (counter == SELLS_NUMBER) counter = 0;
 
-}
+
 
 ISR(TIMER1_COMPA_vect)
 {
-	turn_off_sound();
+	sound_turn_off();
 }
 
-void change_number()
+uint8_t display_zero_flag = 0;
+
+void display_value_decrement()
 {
-//	PORTD ^= (1 << 7);
-	if (!current_number[0])
+	if (!display_current_number[0])
 	{
-		if(!current_number[1])
+		if(!display_current_number[1])
 		{
-			if(!current_number[2])
+			if(!display_current_number[2])
 			{
-				//stop timer2:
-				TCCR2 &= ~(1 << CS22) | (1 << CS21) | (1 << CS20);
-				TIMSK &= ~(1 << OCIE2);
-				//buzzer!
-				set_frequency(300);
-				turn_on_sound();
+				display_zero_flag = 1;
 			}
 			else
 			{
-				current_number[2]--;
-				current_number[1] = current_number[0] = 9;
+				display_current_number[2]--;
+				display_current_number[1] = display_current_number[0] = 9;
 
 			}
 		}
 		else
 		{
-			current_number[1]--;
-			current_number[0] = 9;
+			display_current_number[1]--;
+			display_current_number[0] = 9;
 		}
 	}
 	else
 	{
-		current_number[0]--;
+		display_current_number[0]--;
 	}
 }
 
 ISR(TIMER2_COMP_vect)
 {
 	static uint8_t cycles_counter = 0;
-	next_digit();
+	display_next_digit_of_3();
 	cycles_counter++;
 	if(cycles_counter == VALUE_FOR_1S)
 	{
 		cycles_counter = 0;
-		change_number();
+		display_value_decrement();
+		if (display_zero_flag)
+		{
+			//stop timer2:
+			TCCR2 &= ~(1 << CS22) | (1 << CS21) | (1 << CS20);
+			TIMSK &= ~(1 << OCIE2);
+			//buzzer!
+			sound_set_frequency(300);
+			sound_turn_on();
+		}
 	}
 }
 
@@ -126,7 +114,6 @@ void setup_io()
 	//enable interrupts globally:
 	sei();
 
-	DDRD |= (1 << 7);
 
 }
 

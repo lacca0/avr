@@ -1,4 +1,6 @@
-void send_element(uint16_t number, uint8_t* pos)
+uint16_t uart_outcoming_number = 0;
+
+void uart_send_next_digit(uint16_t number, uint8_t* pos)
 {
 	uint16_t divisor = 1;
 	//make 10^(*pos - 1):
@@ -10,31 +12,20 @@ void send_element(uint16_t number, uint8_t* pos)
 	(*pos)--;
 }
 
-uint8_t decim_digits_num(uint16_t number)
-{
-	uint8_t i = 1;
-	while ((number / 10) > 0)
-	{
-		number = number / 10;
-		i++;
-	}
-	return i;
-}
-
-void send_number_iter()
+void uart_send_number_iter()
 {
 	static uint8_t position = 0;
 	static uint8_t state = 1;
 	if (state == 1)
 	{
-		position = decim_digits_num(output_in_progress);
+		position = decim_digits_num(uart_outcoming_number);
 		state = 2;
 	}
 	else if (state == 2)
 	{
 		if (position > 0)
 		{
-			send_element(output_in_progress, &position);
+			uart_send_next_digit(uart_outcoming_number, &position);
 		}
 		else
 		{

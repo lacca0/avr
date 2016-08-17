@@ -4,17 +4,13 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
-#define PRES0 64UL
-#define PRES1 1024UL
-
 #define F_CPU 1000000UL  // 1 MHz
 #define BUFF_LENGTH 10
 
-uint16_t output_in_progress = 0;
-
-#include "uart_buffer.c"
-#include "music.c"
-#include "UART_send_number.c"
+#include "utilities.c"
+#include "buffer.c"
+#include "sound.c"
+#include "uart.c"
 
 //PB3 is connected to buzzer.
 
@@ -22,12 +18,12 @@ ISR(TIMER1_COMPA_vect)
 {
 	if(IN_EMPTY)
 	{
-		turn_off_sound();
+		sound_turn_off();
 	}
 	else
 	{
-		output_in_progress = access_data();
-		set_frequency(output_in_progress);
+		uart_outcoming_number = buffer_access_data();
+		sound_set_frequency(uart_outcoming_number);
 		UCSRB |= (1<< UDRIE);
 	}
 }
@@ -43,14 +39,14 @@ ISR(USART_RXC_vect)
 	}
 	else if (MYUDR == '\r')
 	{
-		add_in_data(in_frequency);
+		buffer_add_in_data(in_frequency);
 		in_frequency = 0;
-		if (!smth_is_playing)
+		if (!sound_enabled)
 		{
-			output_in_progress = access_data();
-			set_frequency(output_in_progress);
+			uart_outcoming_number = buffer_access_data();
+			sound_set_frequency(uart_outcoming_number);
 			UCSRB |= (1 << UDRIE);
-			turn_on_sound();
+			sound_turn_on();
 		}
 	}
 	else
@@ -61,7 +57,7 @@ ISR(USART_RXC_vect)
 
 ISR(USART_UDRE_vect)
 {
-	send_number_iter();
+	uart_send_number_iter();
 }
 
 

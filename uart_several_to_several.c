@@ -5,7 +5,7 @@
 #include <avr/sleep.h>
 
 #define BUFF_LENGTH 10
-#include "uart_buffer.c"
+#include "buffer.c"
 
 #define F_CPU 1000000UL  // 1 MHz
 

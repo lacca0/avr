@@ -4,7 +4,7 @@ int IN_PTR_E = 0;
 bool IN_FULL = false;
 bool IN_EMPTY = true;
 
-void add_in_data(uint16_t data)
+void buffer_add_in_data(uint16_t data)
 {
 	if (IN_FULL)
 	{
@@ -26,7 +26,7 @@ void add_in_data(uint16_t data)
 	IN_EMPTY = false;
 }
 
-uint16_t access_data()
+uint16_t buffer_access_data()
 {
 	uint16_t number;
 	if (IN_EMPTY)
