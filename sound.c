@@ -1,8 +1,8 @@
-#define TO_OCR0(freq) (F_CPU / PRES0) / freq / 2 // 2 is magic number for frequency change
-#define MS_TO_OCR1(ms) (ms * F_CPU) / (1000 * PRES1)
 #define PRES0 64UL
 #define PRES1 1024UL
 
+#define TO_OCR0(freq) FREQ_TO_CLOCKS(freq, PRES0) / 2 // 2 is magic number for frequency change
+#define MS_TO_OCR1(ms) MS_TO_CLOCKS(ms, PRES1)
 
 bool sound_enabled = 0;
 

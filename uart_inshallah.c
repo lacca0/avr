@@ -9,24 +9,18 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #define PRES2 1024UL
-#define MY_OCR2 7
-#define VALUE_FOR_1S 140
+#define MY_OCR2 MS_TO_CLOCKS(3, PRES2) - 1 // the real (actual) period between comparator trigger events is OCRn + 1, so subtract one
 
 #define SELLS_NUMBER 3
 #include "utilities.c"
 #include "sound.c"
 
-uint8_t display_current_number[SELLS_NUMBER] = {3, 0, 0}; //upside-down.
+uint8_t display_current_number[SELLS_NUMBER] = {9, 9, 9}; //upside-down.
 
 #include "7seg_display.c"
 
 //PB3 is connected to buzzer.
 //PORTB 0,1,2 pins are connected to display, all PORTA for segments. (if changed change "7seg_display.c")
-
-
-
-
-
 
 ISR(TIMER1_COMPA_vect)
 {
@@ -66,10 +60,10 @@ void display_value_decrement()
 
 ISR(TIMER2_COMP_vect)
 {
-	static uint8_t cycles_counter = 0;
-	display_next_digit_of_3();
+	static uint16_t cycles_counter = 0;
+	display_show_next_digit();
 	cycles_counter++;
-	if(cycles_counter == VALUE_FOR_1S)
+	if(cycles_counter == MS_TO_CLOCKS(1000, PRES2 * MY_OCR2))
 	{
 		cycles_counter = 0;
 		display_value_decrement();
