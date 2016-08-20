@@ -7,10 +7,10 @@
 #define F_CPU 1000000UL  // 1 MHz
 #define BUFF_LENGTH 10
 
-#include "utilities.c"
-#include "buffer.c"
-#include "sound.c"
-#include "uart.c"
+#include "lib/utilities.c"
+#include "lib/buffer.c"
+#include "lib/sound.c"
+#include "lib/uart.c"
 
 //PB3 is connected to buzzer.
 
@@ -23,7 +23,7 @@ ISR(TIMER1_COMPA_vect)
 	else
 	{
 		uart_outcoming_number = buffer_access_data();
-		sound_set_frequency(uart_outcoming_number);
+		sound_set(uart_outcoming_number, 2000);
 		UCSRB |= (1<< UDRIE);
 	}
 }
@@ -44,7 +44,7 @@ ISR(USART_RXC_vect)
 		if (!sound_enabled)
 		{
 			uart_outcoming_number = buffer_access_data();
-			sound_set_frequency(uart_outcoming_number);
+			sound_set(uart_outcoming_number, 2000);
 			UCSRB |= (1 << UDRIE);
 			sound_turn_on();
 		}
