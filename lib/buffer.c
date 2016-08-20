@@ -1,3 +1,5 @@
+#pragma once
+
 uint16_t IN_buff[BUFF_LENGTH] = {};
 int IN_PTR_S = 0;
 int IN_PTR_E = 0;

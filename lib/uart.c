@@ -1,3 +1,5 @@
+#pragma once
+
 uint16_t uart_outcoming_number = 0;
 
 void uart_send_next_digit(uint16_t number, uint8_t* pos)
