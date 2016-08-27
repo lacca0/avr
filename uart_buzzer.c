@@ -10,7 +10,7 @@
 #include "lib/utilities.c"
 #include "lib/buffer.c"
 #include "lib/sound.c"
-#include "lib/uart.c"
+#include "lib/uart_alt.c"
 
 //PB3 is connected to buzzer.
 
@@ -22,9 +22,11 @@ ISR(TIMER1_COMPA_vect)
 	}
 	else
 	{
-		uart_outcoming_number = buffer_access_data();
-		sound_set(uart_outcoming_number, 2000);
-		UCSRB |= (1<< UDRIE);
+		uint16_t temp = buffer_access_data();
+		sound_set(temp, 2000);
+		turn_number_to_array(uart_outcoming_number, &temp, &uart_outcoming_digits_cnt, UART_ARRAY_LEN);
+		UCSRB |= (1 << UDRIE);
+
 	}
 }
 
@@ -43,8 +45,9 @@ ISR(USART_RXC_vect)
 		in_frequency = 0;
 		if (!sound_enabled)
 		{
-			uart_outcoming_number = buffer_access_data();
-			sound_set(uart_outcoming_number, 2000);
+			uint16_t temp = buffer_access_data();
+			sound_set(temp, 2000);
+			turn_number_to_array(uart_outcoming_number, &temp, &uart_outcoming_digits_cnt, UART_ARRAY_LEN);
 			UCSRB |= (1 << UDRIE);
 			sound_turn_on();
 		}
@@ -57,7 +60,7 @@ ISR(USART_RXC_vect)
 
 ISR(USART_UDRE_vect)
 {
-	uart_send_number_iter();
+	uart_send_number_iter(uart_outcoming_digits_cnt);
 }
 
 

@@ -20,6 +20,8 @@ uint8_t display_current_number[CELLS_NUMBER] = {0, 0, 0};
 
 #include "lib/7seg_display.c"
 
+#include "lib/uart_alt.c"
+
 //PB3 is connected to buzzer.
 //PORTB 0,1,2 pins are connected to display, all PORTA for segments. (if changed change "7seg_display.c")
 
@@ -54,10 +56,14 @@ ISR(USART_RXC_vect)
 	{
 		if ((counter > 0) && (counter <= CELLS_NUMBER))
 		{
-			memcpy(display_current_number + CELLS_NUMBER - (counter), in_value, (counter));
-			memset(display_current_number, 0, CELLS_NUMBER - (counter));
+			memcpy(display_current_number + CELLS_NUMBER - counter, in_value, counter);
+			memset(display_current_number, 0, CELLS_NUMBER - counter);
 			display_zero_flag = 0;
 			timer2_init();
+			memset(uart_outcoming_number, 0, UART_ARRAY_LEN);
+			memcpy(uart_outcoming_number + UART_ARRAY_LEN - counter, in_value, counter);
+			uart_outcoming_digits_cnt = counter;
+			UCSRB |= (1 << UDRIE);
 		}
 		memset(in_value, 0, CELLS_NUMBER);
 		counter = 0;
@@ -90,6 +96,10 @@ ISR(TIMER2_COMP_vect)
 	}
 }
 
+ISR(USART_UDRE_vect)
+{
+	uart_send_number_iter(uart_outcoming_digits_cnt);
+}
 
 void setup_io()
 {
