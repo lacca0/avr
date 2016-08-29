@@ -6,18 +6,18 @@ uint8_t uart_outcoming_digits_cnt; // количество значимых ци
 
 void uart_send_next_digit(uint8_t* digits, uint8_t* count)
 {
-	UDR = *(digits + UART_ARRAY_LEN - *count) + '0';
+	UDR = digits[UART_ARRAY_LEN - *count] + '0';
 	(*count)--;
 	//с нулевого элемента до энного.
 }
 
-void uart_send_number_iter(uint8_t starting_position)
+void uart_send_number_iter()
 {
 	static uint8_t position = 0;
 	static uint8_t state = 1;
 	if (state == 1)
 	{
-		position = starting_position;
+		position = uart_outcoming_digits_cnt;
 		state = 2;
 	}
 	else if (state == 2)

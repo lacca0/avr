@@ -1,15 +1,19 @@
 #pragma once
-//timer 0 for timing, timer 1 for sound
+
 #include "utilities.c"
+
+//timer 0 for timing, timer 1 for sound
 #define PRES0 64UL
 #define PRES1 1024UL
 
-#define TO_OCR0(freq) FREQ_TO_CLOCKS(freq, PRES0) / 2 // 2 is magic number for frequency change
+#define TO_OCR0(freq) FREQ_TO_CLOCKS(freq, PRES0)  / 2 //  magic number for frequency change
 #define MS_TO_OCR1(ms) MS_TO_CLOCKS(ms, PRES1)
 
 #define TO_OCR1(n) MS_TO_OCR1(n * ONE_MUSICAL_SXTNTH_LENGTH) // n is the number of musical sxtnths in note
 
 #define ONE_MUSICAL_SXTNTH_LENGTH 143 // in ms
+
+#include "imperial_march.c"//подставьте нужную мелодию.
 
 bool sound_enabled = 0;
 
@@ -52,5 +56,30 @@ void sound_pause()
 	sound_mute();
 	//change current duration of sound_pause:
 	OCR1A = ONE_MUSICAL_SXTNTH_LENGTH / 2;
+}
+
+void sound_change_note()
+{
+	static uint8_t counter = 0;
+
+	if (melody_frequency_array[counter] == 0)
+	{
+		sound_mute();
+	}
+	else
+	{
+		//change frequency:
+		OCR0 = melody_frequency_array[counter];
+		sound_unmute();
+	}
+
+	//change current duration of note:
+	OCR1A = melody_timing[counter];
+
+	counter++;
+	if (counter == melody_array_len)
+	{
+		counter = 0;
+	}
 }
 

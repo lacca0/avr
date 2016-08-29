@@ -24,7 +24,7 @@ ISR(TIMER1_COMPA_vect)
 	{
 		uint16_t temp = buffer_access_data();
 		sound_set(temp, 2000);
-		turn_number_to_array(uart_outcoming_number, &temp, &uart_outcoming_digits_cnt, UART_ARRAY_LEN);
+		turn_number_to_array(uart_outcoming_number, temp, &uart_outcoming_digits_cnt, UART_ARRAY_LEN);
 		UCSRB |= (1 << UDRIE);
 
 	}
@@ -47,7 +47,7 @@ ISR(USART_RXC_vect)
 		{
 			uint16_t temp = buffer_access_data();
 			sound_set(temp, 2000);
-			turn_number_to_array(uart_outcoming_number, &temp, &uart_outcoming_digits_cnt, UART_ARRAY_LEN);
+			turn_number_to_array(uart_outcoming_number, temp, &uart_outcoming_digits_cnt, UART_ARRAY_LEN);
 			UCSRB |= (1 << UDRIE);
 			sound_turn_on();
 		}
@@ -60,7 +60,7 @@ ISR(USART_RXC_vect)
 
 ISR(USART_UDRE_vect)
 {
-	uart_send_number_iter(uart_outcoming_digits_cnt);
+	uart_send_number_iter();
 }
 
 

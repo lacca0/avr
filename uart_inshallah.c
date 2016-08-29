@@ -98,7 +98,7 @@ ISR(TIMER2_COMP_vect)
 
 ISR(USART_UDRE_vect)
 {
-	uart_send_number_iter(uart_outcoming_digits_cnt);
+	uart_send_number_iter();
 }
 
 void setup_io()
