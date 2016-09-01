@@ -7,7 +7,6 @@
 #define F_CPU 1000000UL  // 1 MHz
 
 #include "lib/sound.c"
-#include "lib/imperial_march.c"//you can use different libraries for different melodies.
 
 // PB3 is connected with buzzer, PD3 with button
 
