@@ -27,7 +27,17 @@ uint8_t display_current_number[CELLS_NUMBER] = {0, 0, 0};
 
 ISR(TIMER1_COMPA_vect)
 {
-	sound_turn_off();
+	static bool counter = 0;
+	if (counter == 0)
+	{
+		sound_change_note();
+		counter = 1;
+	}
+	else
+	{
+		sound_pause();
+		counter = 0;
+	}
 }
 
 uint8_t state_flag = 0;
@@ -56,14 +66,19 @@ ISR(USART_RXC_vect)
 	{
 		if ((counter > 0) && (counter <= CELLS_NUMBER))
 		{
+			//настройка дисплея:
 			memcpy(display_current_number + CELLS_NUMBER - counter, in_value, counter);
 			memset(display_current_number, 0, CELLS_NUMBER - counter);
 			display_zero_flag = 0;
 			timer2_init();
+			//настройка вывода по uart:
 			memset(uart_outcoming_number, 0, UART_ARRAY_LEN);
 			memcpy(uart_outcoming_number + UART_ARRAY_LEN - counter, in_value, counter);
 			uart_outcoming_digits_cnt = counter;
 			UCSRB |= (1 << UDRIE);
+			//отключение музыки:
+			sound_note_counter = 0;
+			sound_turn_off();
 		}
 		memset(in_value, 0, CELLS_NUMBER);
 		counter = 0;
@@ -90,8 +105,8 @@ ISR(TIMER2_COMP_vect)
 			TCCR2 &= ~(1 << CS22) | (1 << CS21) | (1 << CS20);
 			TIMSK &= ~(1 << OCIE2);
 			//buzzer!
-			sound_set(150, 2000);
 			sound_turn_on();
+			sound_change_note();
 		}
 	}
 }
