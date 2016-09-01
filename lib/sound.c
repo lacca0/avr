@@ -13,7 +13,7 @@
 
 #define ONE_MUSICAL_SXTNTH_LENGTH 143 // in ms
 
-#include "test_melody.c"//подставьте нужную мелодию.
+#include "imperial_march.c"//подставьте нужную мелодию.
 
 bool sound_enabled = 0;
 
@@ -58,26 +58,26 @@ void sound_pause()
 	OCR1A = ONE_MUSICAL_SXTNTH_LENGTH / 2;
 }
 
+uint8_t sound_note_counter = 0;
+
 void sound_change_note()
 {
-	static uint8_t counter = 0;
-
 	//change current duration of note:
-	OCR1A = melody_timing[counter];
-	if (melody_frequency_array[counter] == 0)
+	OCR1A = melody_timing[sound_note_counter];
+	if (melody_frequency_array[sound_note_counter] == 0)
 	{
 		sound_mute();
 	}
 	else
 	{
 		//change frequency:
-		OCR0 = melody_frequency_array[counter];
+		OCR0 = melody_frequency_array[sound_note_counter];
 		sound_unmute();
 	}
-	if (counter == melody_array_len)
+	if (sound_note_counter == melody_array_len)
 	{
 		sound_turn_off();
 	}
-	counter++;
+	sound_note_counter++;
 }
 
