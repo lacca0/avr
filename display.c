@@ -3,6 +3,7 @@
 #include <avr/io.h>
 
 #define F_CPU 1000000UL  // 1 MHz
+
 #define RS 0
 #define RW 1
 #define E 2
@@ -12,32 +13,35 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
-void setup_io()
+void setup_timers()
 {
 	TCCR0 |= (1 << CS00) | (1 << CS02);//prescaler 1024
 	TIMSK |= (1 << TOIE0);//timer0 overflow  interrupt enable;
 	sei();//interrupts enable
 }
 
+
+void setup_io()
+{
+	DDRC |= (1 << RS) | (1 << RW) | (1 << E);//вывод
+}
+
 bool receive_busy_flag()
 {
 	DDRA = 0;
-	PORTA &= ~0;
+	PORTA = 0;
 	PORTC &= ~(1 << RS);
 	PORTC |= (1 << RW);
 	PORTC |= (1 << E);
 	PORTC &= ~(1 << E);
-	return (PORTC & 0b10000000);
+	return (!!(PORTA & 0b10000000));
 }
 
 void start_sending_command()
 {
 	DDRA = ~0;//вывод
 	PORTA = 0;
-	DDRC |= 111;//вывод
-	PORTC = 0;
-	PORTC &= ~((1 << RW) | (1 << RS));
-	PORTC |= (1 << E);
+	PORTC = (1 << E);
 	while (receive_busy_flag()) {};
 }
 
@@ -51,15 +55,9 @@ void start_sending_data()
 {
 	DDRA = ~0;//вывод
 	PORTA = 0;
-	DDRC |= 111;//вывод
-	PORTC = 0;
-	PORTC &= ~(1 << RW);
-	PORTC |= (1 << RS);
-	PORTC |= (1 << E);
+	PORTC = (1 << RS) | (1 << E);
 	while (receive_busy_flag()) {}
 }
-
-
 
 void display_visibility_on()
 {
@@ -71,26 +69,35 @@ void display_visibility_on()
 void display_init()
 {
 	_delay_us(15);
-	PORTA |= (1 << 5) | (1 << 4);
+
+	start_sending_command();
+	PORTA = 0b00110000;
+	end_sending();
 	_delay_ms(5);
-	PORTA |= (1 << 5) | (1 << 4);
+
+	start_sending_command();
+	PORTA = 0b00110000;
+	end_sending();
 	_delay_us(100);
-	PORTA |= (1 << 5) | (1 << 4);
 
 	start_sending_command();
-	PORTA |= (1 << 5) | (1 << 4) | (1 << 3) | (1 << 2);//3>2 lines,2>5x10dots
+	PORTA = 0b00110000;
 	end_sending();
 
 	start_sending_command();
-	PORTA |= (1 << 3);//display off
+	PORTA = 0b00110000;//2 lines,5x10dots
 	end_sending();
 
 	start_sending_command();
-	PORTA |= (1 << 3);//display clear
+	PORTA = 0b00001000;//display off
 	end_sending();
 
 	start_sending_command();
-	PORTA |= (1 << 2) | (1 << 1) | (0 << 0);//increment adress counter, zero shift
+	PORTA = 0b00000001;//display clear
+	end_sending();
+
+	start_sending_command();
+	PORTA = 0b00000111;//increment adress counter, zero shift
 	end_sending();
 }
 
@@ -111,6 +118,7 @@ int main()
 		}
 	}*/
 	setup_io();
+	//setup_timers;
 	display_init();
 	display_visibility_on();
 
@@ -126,5 +134,9 @@ int main()
 	PORTA = 0b01000101;//'E'
 	end_sending();
 
+	while(true)
+	{
+		sleep_cpu();
+	}
 
 }
