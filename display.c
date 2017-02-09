@@ -28,21 +28,29 @@ void setup_io()
 
 bool receive_busy_flag()
 {
-	DDRA = 0;
+	DDRA = 0;//ввод
 	PORTA = 0;
 	PORTC &= ~(1 << RS);
 	PORTC |= (1 << RW);
 	PORTC |= (1 << E);
+	bool busy_flag = !!(PINA & 0b10000000);
 	PORTC &= ~(1 << E);
-	return (!!(PORTA & 0b10000000));
+	return busy_flag;
 }
 
 void start_sending_command()
 {
+	while (receive_busy_flag()) {};
 	DDRA = ~0;//вывод
 	PORTA = 0;
 	PORTC = (1 << E);
-	while (receive_busy_flag()) {};
+}
+
+void start_sending_command_init()
+{
+	DDRA = ~0;//вывод
+	PORTA = 0;
+	PORTC = (1 << E);
 }
 
 void end_sending()
@@ -53,10 +61,10 @@ void end_sending()
 
 void start_sending_data()
 {
+	while (receive_busy_flag()) {}
 	DDRA = ~0;//вывод
 	PORTA = 0;
 	PORTC = (1 << RS) | (1 << E);
-	while (receive_busy_flag()) {}
 }
 
 void display_visibility_on()
@@ -70,17 +78,17 @@ void display_init()
 {
 	_delay_us(15);
 
-	start_sending_command();
+	start_sending_command_init();
 	PORTA = 0b00110000;
 	end_sending();
 	_delay_ms(5);
 
-	start_sending_command();
+	start_sending_command_init();
 	PORTA = 0b00110000;
 	end_sending();
 	_delay_us(100);
 
-	start_sending_command();
+	start_sending_command_init();
 	PORTA = 0b00110000;
 	end_sending();
 
@@ -126,12 +134,12 @@ int main()
 	PORTA = 0b10000000;//DDRAM adress 00
 	end_sending();
 
-	start_sending_command();
+	/*start_sending_command();
 	PORTA = 0b00010100;//cursor shift;
-	end_sending();
+	end_sending();*/
 
 	start_sending_data();//write data
-	PORTA = 0b01000101;//'E'
+	PORTA = 0b11101110;//'E'
 	end_sending();
 
 	while(true)
