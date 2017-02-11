@@ -29,11 +29,12 @@ void setup_io()
 bool receive_busy_flag()
 {
 	DDRA = 0;//ввод
-	PORTA = 0;
+	PORTA = ~0;
 	PORTC &= ~(1 << RS);
 	PORTC |= (1 << RW);
 	PORTC |= (1 << E);
-	bool busy_flag = !!(PINA & 0b10000000);
+	_delay_us(1);
+	bool busy_flag = !!(PINA & (1 << 7));
 	PORTC &= ~(1 << E);
 	return busy_flag;
 }
@@ -144,12 +145,9 @@ int main()
 	PORTA = 0b00010100;//cursor shift;
 	end_sending();*/
 
-	_delay_ms(100);
 	start_sending_data();//write data
 	PORTA = 0b01001000;//'E'
 	end_sending();
-
-	_delay_ms(100);
 
 	start_sending_data();//write data
 	PORTA = 0b01001001;//'E'
