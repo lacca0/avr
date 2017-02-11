@@ -91,22 +91,28 @@ void display_init()
 	start_sending_command_init();
 	PORTA = 0b00110000;
 	end_sending();
+	_delay_ms(1);
 
-	start_sending_command();
-	PORTA = 0b00110000;//2 lines,5x10dots
+	start_sending_command_init();
+	PORTA = 0b0011100;//8-bit interface, 2 lines,5x8dots
 	end_sending();
+	_delay_ms(1);
 
-	start_sending_command();
+	start_sending_command_init();
 	PORTA = 0b00001000;//display off
 	end_sending();
+	_delay_ms(1);
 
-	start_sending_command();
+	start_sending_command_init();
 	PORTA = 0b00000001;//display clear
 	end_sending();
+	_delay_ms(1);
 
-	start_sending_command();
-	PORTA = 0b00000111;//increment adress counter, zero shift
+	start_sending_command_init();
+	PORTA = 0b00000110;//increment adress counter, zero shift
 	end_sending();
+	_delay_ms(1);
+
 }
 
 int main()
@@ -131,15 +137,22 @@ int main()
 	display_visibility_on();
 
 	start_sending_command();
-	PORTA = 0b10000000;//DDRAM adress 00
+	PORTA = 0b10000000;//set DDRAM adress 00
 	end_sending();
 
 	/*start_sending_command();
 	PORTA = 0b00010100;//cursor shift;
 	end_sending();*/
 
+	_delay_ms(100);
 	start_sending_data();//write data
-	PORTA = 0b11101110;//'E'
+	PORTA = 0b01001000;//'E'
+	end_sending();
+
+	_delay_ms(100);
+
+	start_sending_data();//write data
+	PORTA = 0b01001001;//'E'
 	end_sending();
 
 	while(true)
