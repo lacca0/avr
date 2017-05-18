@@ -31,9 +31,7 @@ uint8_t field[FIELD_HEIGHT][FIELD_WIDTH] = {
 {1, 1, 1, 1, 1, 1, 1, 1},
 };
 
-uint8_t screen_lower_bound = 6;
-
-bool previous_step_was_up = 1;//обработать заход сверху
+bool previous_step_was_up = 0;//обработать заход сверху
 
 uint8_t my_location[2] = {6, 1};
 
@@ -48,11 +46,11 @@ void fill_screen()
 	for (uint8_t i = 0; i < FIELD_WIDTH; i++)
 	{
 	//i - номер в строке
-		if (field[screen_lower_bound - 1][i] != 0)
+		if (field[my_location[0] - previous_step_was_up + 1 - 1][i] != 0)
 		{
 			display_send_character(DISPLAY_SQUARE);
 		}
-		else if ((my_location[0] == (screen_lower_bound - 1)) && (my_location[1] == i))
+		else if ((my_location[0] == (my_location[0] - previous_step_was_up + 1 - 1)) && (my_location[1] == i))
 		{
 			display_send_character('I');
 		}
@@ -65,11 +63,11 @@ void fill_screen()
 	display_send_command(CMD_SET_DDRAM_ADDRESS | DDRAM_2ND_LINE);
 	for (uint8_t i = 0; i < FIELD_WIDTH; i++)
 	{
-		if (field[screen_lower_bound][i] != 0)
+		if (field[my_location[0] - previous_step_was_up + 1][i] != 0)
 		{
 			display_send_character(DISPLAY_SQUARE);
 		}
-		else if ((my_location[0] == screen_lower_bound) && (my_location[1] == i))
+		else if ((my_location[0] == my_location[0] - previous_step_was_up + 1) && (my_location[1] == i))
 		{
 			display_send_character('I');
 		}
