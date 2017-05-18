@@ -18,9 +18,6 @@
 #define CMD_DOOC_CURSOR_NOT_VISIBLE 0
 #define CMD_DOOC_BLINKING_CURSOR_ON 0b1
 
-
-
-
 //PORTA is DB0..7
 //PORTC for RS, RW, E
 
