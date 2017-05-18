@@ -6,9 +6,17 @@
 #include <avr/sleep.h>
 
 #define F_CPU 1000000UL  // 1 MHz
-
 #include <util/delay.h>
 
+#define RS 0
+#define RW 1
+#define E 2
+#define ERR 3 //PC3 is error signal
+
+#include "lib/utilities.c"
+
+#define CYPHER_LEN 3
+uint8_t display_current_number[CYPHER_LEN] = {6, 2, 3};
 #include "lib/display.c"
 
 void setup_timers()
@@ -57,7 +65,7 @@ int main()
 	PORTA = 0b00010100;//cursor shift;
 	display_end_sending();*/
 
-	char symbol_array[LINE_LENGTH + 1] = "hello Lena";
+	char symbol_array[LINE_LENGTH + 1] = "hello";
 	char *array_ptr = symbol_array;
 
 
