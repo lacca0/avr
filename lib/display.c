@@ -18,6 +18,10 @@
 #define CMD_DOOC_CURSOR_NOT_VISIBLE 0
 #define CMD_DOOC_BLINKING_CURSOR_ON 0b1
 
+#define CMD_SET_DDRAM_ADDRESS 0b10000000
+
+#define DDRAM_2ND_LINE 0x40
+
 //PORTA is DB0..7
 //PORTC for RS, RW, E
 
@@ -116,6 +120,9 @@ void display_init()
 
 }
 
+#define DISPLAY_SQUARE 1 // re-using ASCII 1
+#define DISPLAY_EMPTY 0
+
 uint8_t display_get_character_code(char ch)
 {
 	if ((ch >= 'A') && (ch <= 'Z'))
@@ -138,9 +145,17 @@ uint8_t display_get_character_code(char ch)
 	{
 		return 0b01011111;
 	}
-	else if (ch = '-')
+	else if (ch == '-')
 	{
 		return 0b00101101;
+	}
+	else if (ch == DISPLAY_SQUARE)
+	{
+		return 0b11111111;
+	}
+	else if (ch == DISPLAY_EMPTY)
+	{
+		return 0b00100000;
 	}
 	else
 	{
