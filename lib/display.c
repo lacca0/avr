@@ -98,7 +98,7 @@ void display_init()
 	_delay_ms(1);
 
 	display_start_sending_command_init();
-	PORTA = 0b0011100;//8-bit interface, 2 lines,5x8dots
+	PORTA = 0b00111000;//8-bit interface, 2 lines,5x8dots
 	display_end_sending();
 	_delay_ms(1);
 
