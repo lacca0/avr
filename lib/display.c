@@ -27,19 +27,6 @@
 //PORTA is DB0..7
 //PORTC for RS, RW, E
 
-void panic()//пока здесь, но потом нужно будет перенести.
-{
-	DDRC |= (1 << ERR);
-	cli();
-	while (true)
-	{
-		PORTC |= (1 << ERR);
-		_delay_ms(1000);
-		PORTC &= ~(1 << ERR);
-		_delay_ms(1000);
-	}
-}
-
 bool display_receive_busy_flag()
 {
 	DDRA = 0;//ввод

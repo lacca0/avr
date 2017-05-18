@@ -29,3 +29,18 @@ void turn_number_to_array(uint8_t* array, uint16_t number, uint8_t* digits_cnt, 
 	*digits_cnt = significant_digits_cnt;
 }//*The number is converted to a right-aligned array of decimal digits.
 //* Count of significant digits in that array is returned via "digits_cnt".
+
+#ifdef ERR
+void panic()
+{
+	DDRC |= (1 << ERR);
+	cli();
+	while (true)
+	{
+		PORTC |= (1 << ERR);
+		_delay_ms(1000);
+		PORTC &= ~(1 << ERR);
+		_delay_ms(1000);
+	}
+}
+#endif
