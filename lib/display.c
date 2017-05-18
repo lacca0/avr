@@ -159,3 +159,10 @@ void display_send_character(char ch)
 	display_end_sending();
 }
 
+void display_send_string(const char *symbol_array)
+{
+	for (int i = 0; symbol_array[i] != 0; i++)
+	{
+		display_send_character(symbol_array[i]);
+	}
+}
