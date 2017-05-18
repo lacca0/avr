@@ -1,7 +1,4 @@
-#define RS 0
-#define RW 1
-#define E 2
-#define ERR 3 //PC3 is error signal
+#pragma once
 
 #define LINE_LENGTH 16
 
