@@ -137,6 +137,14 @@ uint8_t display_get_character_code(char ch)
 	{
 		return 0b00100000;
 	}
+	else if (ch == '_')
+	{
+		return 0b01011111;
+	}
+	else if (ch = '-')
+	{
+		return 0b00101101;
+	}
 	else
 	{
 		panic();
