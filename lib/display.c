@@ -32,7 +32,7 @@ bool display_receive_busy_flag()
 	PORTC &= ~(1 << RS);
 	PORTC |= (1 << RW);
 	PORTC |= (1 << E);
-	_delay_us(1);
+	_delay_us(5);
 	bool busy_flag = !!(PINA & (1 << 7));
 	PORTC &= ~(1 << E);
 	return busy_flag;
