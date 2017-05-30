@@ -57,16 +57,19 @@ void setup_io()
 
 }
 
-
-int main(void)
+void setup_timers()
 {
-	setup_io();
-
 	TCCR0 = (1 << CS00) | (0 << CS01) | (1 << CS02) | (0 << WGM00) | (1 << WGM01) | (1 << COM00) | (0 << COM01);
 	TCCR1A = (0 << COM1A1) | (0 << COM1A0) | (0 << COM1B1) | (0 << COM1B0) | (0 << WGM11) | (0 << WGM10);
 	TCCR1B = (0 << WGM13) | (0 << WGM12) | (0 << CS12) | (0 << CS11) | (1 << CS10);
 	TIMSK |=  (1 << TOIE1);
+}
 
+
+int main(void)
+{
+	setup_io();
+	setup_timers();
 	sei();
 
 	sleep_enable();
